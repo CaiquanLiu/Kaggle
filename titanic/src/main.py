@@ -45,8 +45,8 @@ xgbc=XGBClassifier()
 
 # 引入预测评估
 from sklearn.cross_validation import cross_val_score
-print cross_val_score(rfc, X_train, y_train, cv=5).mean()
-print cross_val_score(xgbc, X_train, y_train, cv=5).mean()
+# print cross_val_score(rfc, X_train, y_train, cv=5).mean()
+# print cross_val_score(xgbc, X_train, y_train, cv=5).mean()
 
 # 使用随机森林模型进行训练和预测
 rfc.fit(X_train, y_train)
@@ -54,6 +54,23 @@ rfc_y_predict=rfc.predict(X_test)
 rfc_submission=pd.DataFrame({'PassengerId':test['PassengerId'], 'Survived':rfc_y_predict})
 rfc_submission.to_csv('../rst/rfc_submission.csv', index=False)
 
+# 使用boosting进行训练和预测
+xgbc.fit(X_train, y_train)
+xgbc_y_predict=xgbc.predict(X_test)
+xgbc_submission=pd.DataFrame({'PassengerId': test['PassengerId'], 'Survived': xgbc_y_predict})
+xgbc_submission.to_csv('../rst/xgbc_submission.csv', index= False)
+
+# 使用并行网络搜索的方式提高XGBClassifier的预测性能
+from sklearn.grid_search import GridSearchCV
+params={'max_depth':range(2,7), 'n_estimators':range(100, 1100, 200), 'learning_rate': [0.05, 0.1, 0.25,0.5, 1.0]}
+xgbc_best=XGBClassifier()
+gs=GridSearchCV(xgbc_best, params, n_jobs=-1, cv=5, verbose=1)
+gs.fit(X_train, y_train)
+print gs.best_score_
+print gs.best_params_
+xgbc_best_y_predict=gs.predict(X_test)
+xgbc_best_submission=pd.DataFrame({'PassengerId':test['PassengerId'], 'Survived':xgbc_best_y_predict})
+xgbc_best_submission.to_csv('../rst/xgbc_best_submission.csv', index=False)
 
 
 
